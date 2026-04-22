@@ -1,0 +1,55 @@
+clc;
+clear;
+close all;
+
+%% System Parameters (Vehicle Suspension Model)
+m  = 325;          % Mass (kg)
+k  = 20000;        % Stiffness (N/m)
+dt = 0.01;         % Time step (s)
+nt = 3000;         % Number of time steps
+
+t = (0:nt-1) * dt; % Time vector
+
+%% Critical Damping
+cc = 2 * sqrt(m * k);
+
+%% Damping Cases
+c_values = [0.5*cc, cc, 2*cc];  
+labels   = {'Underdamped', 'Critical Damping', 'Overdamped'};
+
+%% Plot Setup
+figure;
+hold on;
+grid on;
+
+%% Loop for Each Damping Case
+for j = 1:length(c_values)
+    
+    c = c_values(j);
+    
+    % Initialization
+    x = zeros(1, nt);
+    x(1) = 0.05;     % Initial displacement (m)
+    v0   = 0;        % Initial velocity
+    
+    % First time step
+    x(2) = x(1) + v0 * dt;
+    
+    % Time integration (FDM)
+    for n = 2:nt-1
+        x(n+1) = ((2*m - c*dt)*x(n) ...
+                 - (m - c*dt)*x(n-1) ...
+                 - k*dt^2 * x(n)) / m;
+    end
+    
+    % Plot result
+    plot(t, x, 'LineWidth', 2, 'DisplayName', labels{j});
+end
+
+%% Graph Labels
+xlabel('Time (s)');
+ylabel('Displacement (m)');
+title('Vehicle Suspension Response (Realistic Data)');
+legend;
+xlim([0 3]);
+ylim([-0.02 0.05]);
